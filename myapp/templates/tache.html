@@ -1,0 +1,236 @@
+{% extends 'test.html' %}
+
+{% block title %}Gestion des Tâches{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .table-wrapper {
+        background: #fff;
+        padding: 20px 25px;
+        margin: 30px 0;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    }
+    .table-title {        
+        padding-bottom: 15px;
+        background: #0f558e;
+        color: #fff;
+        padding: 16px 30px;
+        margin: -20px -25px 10px;
+        border-radius: 3px 3px 0 0;
+    }
+    .table-title h2 {
+        margin: 5px 0 0;
+        font-size: 24px;
+    }
+    .table-title .btn-group {
+        float: right;
+    }
+    .table-title .btn {
+        color: #fff;
+        float: right;
+        font-size: 13px;
+        border: none;
+        min-width: 50px;
+        border-radius: 2px;
+        outline: none !important;
+        margin-left: 10px;
+    }
+    .table-title .btn i {
+        float: left;
+        font-size: 21px;
+        margin-right: 5px;
+    }
+    .table-title .btn span {
+        float: left;
+        margin-top: 2px;
+    }
+    table.table tr th, table.table tr td {
+        border-color: #e9e9e9;
+        padding: 12px 15px;
+        vertical-align: middle;
+    }
+    table.table tr th:first-child {
+        width: 60px;
+    }
+    table.table tr th:last-child {
+        width: 100px;
+    }
+    table.table-striped tbody tr:nth-of-type(odd) {
+        background-color: #fcfcfc;
+    }
+    table.table-striped.table-hover tbody tr:hover {
+        background: #f5f5f5;
+    }
+    table.table th i {
+        font-size: 13px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+    table.table td:last-child i {
+        opacity: 0.9;
+        font-size: 22px;
+        margin: 0 5px;
+    }
+    table.table td a {
+        font-weight: bold;
+        color: #566787;
+        display: inline-block;
+        text-decoration: none;
+        outline: none !important;
+    }
+    table.table td a:hover {
+        color: #2196F3;
+    }
+    table.table td a.edit {
+        color: #FFC107;
+    }
+    table.table td a.delete {
+        color: #F44336;
+    }
+    table.table td i {
+        font-size: 19px;
+    }
+    table.table .avatar {
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-right: 10px;
+    }
+    .modal .modal-dialog {
+        max-width: 400px;
+    }
+    .modal .modal-header, .modal .modal-body, .modal .modal-footer {
+        padding: 20px 30px;
+    }
+    .modal .modal-content {
+        border-radius: 3px;
+    }
+    .modal .modal-footer {
+        background: #ecf0f1;
+        border-radius: 0 0 3px 3px;
+    }
+    .modal .modal-title {
+        display: inline-block;
+    }
+    .modal .form-control {
+        border-radius: 2px;
+        box-shadow: none;
+        border-color: #dddddd;
+    }
+    .modal textarea.form-control {
+        resize: vertical;
+    }
+    .modal .btn {
+        border-radius: 2px;
+        min-width: 100px;
+    }
+    .modal form label {
+        font-weight: normal;
+    }
+    .notification-icon {
+        cursor: pointer;
+    }
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="container">
+    <div class="table-wrapper">
+        <div class="table-title">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Gestion <b>Des Taches</b></h2>
+                </div>
+                <form method="post" action="{% url 'executer' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success"><i class='bx bx-cog'></i> <span>Exécuter</span></button>
+                </form>
+            </div>
+        </div>
+
+        {% if data %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Clé</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, value in data.items %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Adresse IP</th>
+                    <th>Mémoire Physique Totale</th>
+                    <th>Mémoire Physique Disponible</th>
+                    <th>Mémoire Virtuelle Totale</th>
+                    <th>Mémoire Virtuelle Disponible</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for etat in etats %}
+                <tr>
+                    <td>{{ etat.date }}</td>
+                    <td>{{ etat.adresse_ip }}</td>
+                    <td>{{ etat.memoire_phy_tot }}</td>
+                    <td>{{ etat.memoire_phy_dispo }}</td>
+                    <td>{{ etat.memoire_virt_tot }}</td>
+                    <td>{{ etat.memoire_virt_dispo }}</td>
+                    <td>
+                        {% if request.session.role == 'ADMIN' %}
+                        <a href="{% url 'send_notification' etat.id %}" class="notification-icon" title="Notifier" data-toggle="tooltip">
+                            <i class="fa fa-bell" style="color: red;"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <!-- Ajout de la pagination -->
+        {% if etats.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if etats.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ etats.previous_page_number }}">Précédent</a></li>
+                {% else %}
+                <li class="page-item disabled"><a class="page-link">Précédent</a></li>
+                {% endif %}
+                {% for i in etats.paginator.page_range %}
+                {% if etats.number == i %}
+                <li class="page-item active"><a class="page-link">{{ i }}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if etats.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ etats.next_page_number }}">Suivant</a></li>
+                {% else %}
+                <li class="page-item disabled"><a class="page-link">Suivant</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %}

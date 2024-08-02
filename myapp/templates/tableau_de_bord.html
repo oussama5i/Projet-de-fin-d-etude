@@ -1,0 +1,29 @@
+{% extends 'test.html' %}
+
+{% block title %}Tableau de Bord Power BI{% endblock %}
+
+{% block extra_styles %}
+<!-- Ajoutez ici des styles spécifiques si nécessaire -->
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="container">
+    <h1>Tableau de Bord Power BI</h1>
+    <iframe title="BII" width="1000" height="800" src="https://app.powerbi.com/view?r=eyJrIjoiYmY5NjgzMTMtMWE3NC00YzM2LWIyYTUtMTFkMzdmZDMxN2IwIiwidCI6ImYxNTQxYzk2LTIyYzItNGMyZi05OWRlLWJmNjM4Zjc2M2M1NyJ9" frameborder="0" allowFullScreen="true"></iframe>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var iframe = document.querySelector('iframe');
+        iframe.onload = function() {
+            var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+            var signInButton = iframeDocument.querySelector("button[title='Sign in']");
+            if (signInButton) {
+                signInButton.click();
+            }
+        };
+    });
+</script>
+{% endblock scripts %}
